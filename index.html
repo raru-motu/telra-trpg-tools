@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ULTIMATE Character Sheet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8b5cf6;
+            --secondary: #ec4899;
+            --accent: #06b6d4;
+            --bg: #0f172a;
+            --card: rgba(30, 41, 59, 0.7);
+            --border: rgba(255, 255, 255, 0.1);
+            --text: #f1f5f9;
+            --text-muted: #94a3b8;
+            --input-bg: #1e293b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+            background: var(--bg);
+            background-image: 
+                radial-gradient(circle at 0% 0%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 100% 100%, rgba(236, 72, 153, 0.1) 0%, transparent 50%);
+            color: var(--text);
+            padding: 40px 20px 140px;
+            line-height: 1.5;
+        }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+        header { text-align: center; margin-bottom: 40px; }
+        h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(to right, var(--primary), var(--accent)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .card {
+            background: var(--card);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 { font-size: 1.2rem; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        h2::before { content: ""; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
+
+        .grid-profile { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
+        input, select, textarea {
+            background: var(--input-bg);
+            border: 1px solid var(--border);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-family: inherit;
+        }
+        input:focus { outline: none; border-color: var(--primary); }
+
+        .stat-box { background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; text-align: center; border: 1px solid var(--border); }
+        .stat-val { font-size: 1.5rem; font-weight: 800; width: 100%; border: none; background: transparent; text-align: center; color: white; margin: 5px 0; }
+        .btn-roll { background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
+
+        .derived-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+        .derived-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border-left: 4px solid var(--primary); }
+        .derived-label { font-size: 0.75rem; color: var(--text-muted); }
+        .derived-val { font-size: 1.1rem; font-weight: 700; color: var(--accent); }
+
+        .footer-bar {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
+            border-top: 1px solid var(--primary); padding: 20px 40px;
+            display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 30px; align-items: center; z-index: 1000;
+        }
+        .point-item { width: 100%; }
+        .point-label { font-size: 0.75rem; color: var(--primary); font-weight: 700; margin-bottom: 4px; display: block; }
+        .point-text { display: flex; justify-content: space-between; font-size: 0.9rem; font-weight: 800; }
+        .point-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 5px; overflow: hidden; }
+        .point-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
+        .point-fill.error { background: #ef4444; }
+
+        .footer-btns { display: flex; gap: 15px; }
+        .btn-footer { flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 0.85rem; }
+        .btn-footer-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
+        .btn-footer-secondary { background: var(--input-bg); color: var(--accent); border: 1px solid var(--accent); }
+
+        .skill-grid { display: grid; grid-template-columns: 3.5fr 1fr 1fr 1fr 1fr 1.2fr; gap: 6px; align-items: center; padding: 5px 8px; border-bottom: 1px solid var(--border); font-size: 0.8rem; }
+        .skill-grid input { padding: 4px 2px !important; text-align: center; font-size: 0.8rem; width: 100%; min-width: 0; }
+        .skill-name { white-space: nowrap; font-weight: 600; }
+        .skill-header { font-weight: 700; color: var(--text-muted); font-size: 0.7rem; border-bottom: 2px solid var(--border); }
+        .skill-name-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+        .btn-copy-mini { background: none; border: 1px solid var(--border); color: var(--text-muted); padding: 2px 4px; border-radius: 6px; cursor: pointer; font-size: 0.6rem; min-width: 40px; }
+        .btn-copy-mini:hover { background: var(--primary); color: white; }
+        .skill-total { font-weight: 800; color: var(--accent); background: rgba(6, 182, 212, 0.1) !important; }
+
+        .orb-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+        
+        .custom-name-input { width: 100%; font-size: 0.85rem; padding: 5px 8px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header><h1>TRPG CHARACTER SHEET</h1></header>
+
+    <div class="card">
+        <h2>【プロフィール】</h2>
+        <div class="grid-profile">
+            <div class="input-group"><label>名前</label><input type="text" id="name" value="無名"></div>
+            <div class="input-group"><label>第一職業</label><input type="text" id="job1"></div>
+            <div class="input-group"><label>第二職業</label><input type="text" id="job2"></div>
+            <div class="input-group"><label>年齢</label><input type="text" id="age"></div>
+            <div class="input-group"><label>性別</label><input type="text" id="gender"></div>
+            <div class="input-group"><label>身長</label><input type="text" id="height"></div>
+            <div class="input-group"><label>体重</label><input type="text" id="weight"></div>
+            <div class="input-group"><label>出身</label><input type="text" id="origin"></div>
+            <div class="input-group"><label>髪の色</label><input type="text" id="hair"></div>
+        </div>
+        <div class="input-group" style="margin-top: 15px;"><label>自由記述欄</label><textarea id="profile_memo" rows="2"></textarea></div>
+    </div>
+
+    <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2>ステータス (1D70 + 30)</h2>
+            <button class="btn-roll" onclick="rollAll()" style="padding: 8px 15px;">一括ランダム生成</button>
+        </div>
+        <div class="grid-stats">
+            <div class="stat-box"><span class="derived-label">STR</span><input type="number" id="STRv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('STRv')">ROLL</button></div>
+            <div class="stat-box"><span class="derived-label">CON</span><input type="number" id="CONv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('CONv')">ROLL</button></div>
+            <div class="stat-box"><span class="derived-label">DEX</span><input type="number" id="DEXv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('DEXv')">ROLL</button></div>
+            <div class="stat-box"><span class="derived-label">INT</span><input type="number" id="INTv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('INTv')">ROLL</button></div>
+            <div class="stat-box"><span class="derived-label">SIZ</span><input type="number" id="SIZv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('SIZv')">ROLL</button></div>
+            <div class="stat-box"><span class="derived-label">SEN</span><input type="number" id="SENv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('SENv')">ROLL</button></div>
+            <div class="stat-box"><span class="derived-label">POW</span><input type="number" id="POWv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('POWv')">ROLL</button></div>
+        </div>
+        <div class="derived-stats">
+            <div class="derived-item"><div class="derived-label">HP (CON+Bonus)</div><div id="HP_disp" class="derived-val">50</div></div>
+            <div class="derived-item"><div class="derived-label">MP (DEX+Bonus)</div><div id="MP_disp" class="derived-val">50</div></div>
+            <div class="derived-item"><div class="derived-label">黒餓値 (POW)</div><div id="KOKU_disp" class="derived-val">50</div></div>
+            <div class="derived-item"><div class="derived-label">身体系ダメージボーナス</div><div id="PHYS_DB" class="derived-val">なし</div></div>
+            <div class="derived-item"><div class="derived-label">魔法系ダメージボーナス</div><div id="MAGIC_DB" class="derived-val">なし</div></div>
+            <div class="derived-item"><div class="derived-label">回避技能固定値</div><div id="DODGE_FIX" class="derived-val">なし</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>オーブスロット</h2>
+        <div class="orb-grid" id="orbContainer"></div>
+    </div>
+
+    <div class="card"><div id="skills_container"></div></div>
+
+    <div class="card"><h2>【メモ欄】</h2><textarea id="memo" rows="5" style="width: 100%;" placeholder="自由記述欄..."></textarea></div>
+</div>
+
+<div class="footer-bar">
+    <div class="point-item">
+        <span class="point-label">職業ポイント (STR+DEX+INT)</span>
+        <div class="point-text"><span id="JOB_PT_SPENT">0</span><span id="JOB_PT_MAX" style="color: var(--text-muted)">/ 0</span></div>
+        <div class="point-bar"><div id="JOB_PT_BAR" class="point-fill"></div></div>
+    </div>
+    <div class="point-item">
+        <span class="point-label">趣味ポイント (INT+SEN)</span>
+        <div class="point-text"><span id="HOB_PT_SPENT">0</span><span id="HOB_PT_MAX" style="color: var(--text-muted)">/ 0</span></div>
+        <div class="point-bar"><div id="HOB_PT_BAR" class="point-fill"></div></div>
+    </div>
+    <div class="footer-btns">
+        <button class="btn-footer btn-footer-secondary" onclick="copyAllSkills()">全技能コピー</button>
+        <button class="btn-footer btn-footer-primary" onclick="exportData()">ココフォリア出力</button>
+    </div>
+</div>
+
+<script>
+const skillStructure = [
+    { title: "【専用技能】戦闘職", skills: ["2段斬り", "乱舞", "貫通突き", "正拳突き", "暴走", "戦術判断", "精密射撃", "連射", "効率生成", "詠唱短縮", "妖刀", "呪物解放", "変身", "テイム"], base: 50 },
+    { title: "【専用技能】非戦闘職", skills: ["修復", "解析", "治療", "影響力", "鑑定", "捜査", "特殊操縦", "作制"], base: 50 },
+    { title: "【武器技能】", skills: ["剣", "刀", "双剣", "槍", "ガントレット", "拳銃", "スナイパーライフル", "アサルトライフル", "ショットガン", "サブマシンガン", "魔法銃", "杖", "妖刀", "五寸釘", "壺", "タクト", "鞭"], base: 10 },
+    { title: "【戦闘行動技能】", skills: [{name:"回避",base:25},{name:"防御",base:20},{name:"かばう",base:15},{name:"カウンター",base:10},{name:"照準",base:15},{name:"目くらまし",base:20}] },
+    { title: "【行動技能】", skills: [{name:"観察",base:25},{name:"感知",base:15},{name:"操縦",base:10},{name:"工作",base:10},{name:"応急処置",base:20},{name:"会話",base:30},{name:"交渉",base:20},{name:"検索",base:20},{name:"隠密",base:10},{name:"追跡",base:5},{name:"解錠",base:5}] },
+    { title: "【知識技能】", skills: [{name:"義体操作",base:1},{name:"ハッキング",base:1},{name:"魔法理論",base:1},{name:"妖怪知識",base:5},{name:"黒餓知識",base:5},{name:"医療知識",base:10},{name:"機械知識",base:10}] }
+];
+
+const skillsContainer = document.getElementById("skills_container");
+const orbContainer = document.getElementById("orbContainer");
+
+skillStructure.forEach(cat => {
+    let section = document.createElement("div");
+    section.className = "skill-category";
+    section.innerHTML = `<h2>${cat.title}</h2><div class="skill-header skill-grid"><div>技能名</div><div>初期</div><div>職業</div><div>趣味</div><div>成長</div><div>合計</div></div>`;
+    
+    // 既存の技能を追加
+    cat.skills.forEach(s => {
+        let sName = typeof s === "string" ? s : s.name;
+        let sBase = typeof s === "string" ? cat.base : s.base;
+        addSkillRow(section, sName, sBase, false);
+    });
+
+    // 自由入力欄を3行追加
+    for(let i=0; i<3; i++) {
+        addSkillRow(section, "", 0, true);
+    }
+    
+    skillsContainer.appendChild(section);
+});
+
+function addSkillRow(parent, name, base, isCustom) {
+    let row = document.createElement("div");
+    row.className = "skill-row skill-grid";
+    const nameHtml = isCustom 
+        ? `<div class="skill-name-row"><button class="btn-copy-mini" onclick="copyIndividualSkillFromInput(this)">コピー</button><input type="text" class="custom-name-input" placeholder="技能名を入力"></div>`
+        : `<div class="skill-name-row"><button class="btn-copy-mini" onclick="copyIndividualSkill('${name}', this)">コピー</button><div class="skill-name">${name}</div></div>`;
+    
+    row.innerHTML = `
+        ${nameHtml}
+        <input type="number" class="skill-input b" value="${base}">
+        <input type="number" class="skill-input j" value="0">
+        <input type="number" class="skill-input h" value="0">
+        <input type="number" class="skill-input g" value="0" data-manual="0">
+        <input type="number" class="skill-input skill-total t" readonly value="${base}">
+    `;
+    parent.appendChild(row);
+}
+
+const orbOpts = [10,20,30,40,50,60,70,80,90,100];
+for(let i=0; i<8; i++) {
+    let slot = document.createElement("div");
+    slot.className = "input-group";
+    let options = `<option value="none">なし</option>`;
+    orbOpts.forEach(v => options += `<option value="hp_${v}">HP +${v}</option>`);
+    orbOpts.forEach(v => options += `<option value="mp_${v}">MP +${v}</option>`);
+    slot.innerHTML = `<label>オーブ ${i+1}</label><select class="orb-select">${options}</select>`;
+    orbContainer.appendChild(slot);
+}
+
+function rollStat(id) {
+    const val = Math.floor(Math.random() * 70) + 31;
+    document.getElementById(id).value = val;
+    calc();
+}
+function rollAll() { ['STRv', 'CONv', 'DEXv', 'INTv', 'SIZv', 'SENv', 'POWv'].forEach(rollStat); }
+
+function calc() {
+    const str = +document.getElementById("STRv").value, con = +document.getElementById("CONv").value, dex = +document.getElementById("DEXv").value, int = +document.getElementById("INTv").value, siz = +document.getElementById("SIZv").value, sen = +document.getElementById("SENv").value, pow = +document.getElementById("POWv").value;
+    let hpB = 0, mpB = 0;
+    document.querySelectorAll(".orb-select").forEach(sel => {
+        if(sel.value.startsWith("hp_")) hpB += parseInt(sel.value.split("_")[1]);
+        if(sel.value.startsWith("mp_")) mpB += parseInt(sel.value.split("_")[1]);
+    });
+    document.getElementById("HP_disp").innerText = con + hpB;
+    document.getElementById("MP_disp").innerText = dex + mpB;
+    document.getElementById("KOKU_disp").innerText = pow;
+    document.getElementById("PHYS_DB").innerText = siz >= 90 ? "+1D15" : siz >= 70 ? "+1D10" : siz >= 50 ? "+1D5" : "なし";
+    document.getElementById("MAGIC_DB").innerText = int >= 90 ? "+1D15" : int >= 70 ? "+1D10" : int >= 50 ? "+1D5" : "なし";
+    document.getElementById("DODGE_FIX").innerText = sen >= 90 ? "+15" : sen >= 70 ? "+10" : sen >= 50 ? "+5" : "なし";
+    const dodgeBonus = sen >= 90 ? 15 : sen >= 70 ? 10 : sen >= 50 ? 5 : 0;
+
+    const job_max = str + dex + int, hob_max = int + sen;
+    let job_spent = 0, hob_spent = 0;
+    document.querySelectorAll('.skill-row').forEach(r => {
+        const name = r.querySelector('.skill-name')?.innerText || r.querySelector('.custom-name-input')?.value;
+        const b = +r.querySelector('.b').value, j = +r.querySelector('.j').value, h = +r.querySelector('.h').value, gi = r.querySelector('.g'), t = r.querySelector('.t');
+        
+        if (document.activeElement === gi) {
+            let cur = +gi.value;
+            gi.setAttribute('data-manual', name === "回避" ? cur - dodgeBonus : cur);
+        }
+        let manualG = +gi.getAttribute('data-manual') || 0;
+        if (name === "回避") gi.value = manualG + dodgeBonus;
+        else gi.value = manualG;
+        
+        t.value = b + j + h + (+gi.value); job_spent += j; hob_spent += h;
+    });
+    document.getElementById("JOB_PT_SPENT").innerText = job_spent; document.getElementById("JOB_PT_MAX").innerText = "/ " + job_max;
+    document.getElementById("HOB_PT_SPENT").innerText = hob_spent; document.getElementById("HOB_PT_MAX").innerText = "/ " + hob_max;
+    updateBar("JOB_PT_BAR", job_spent, job_max); updateBar("HOB_PT_BAR", hob_spent, hob_max);
+}
+function updateBar(id, s, m) { const b = document.getElementById(id); b.style.width = (m === 0 ? 0 : Math.min((s/m)*100, 100)) + "%"; b.className = "point-fill " + (s > m ? "error" : ""); }
+
+function copyToClipboard(text) { const t = document.createElement("textarea"); t.value = text; document.body.appendChild(t); t.select(); document.execCommand("copy"); document.body.removeChild(t); }
+
+function copyIndividualSkill(n, b) {
+    const row = b.closest('.skill-row'), t = row.querySelector('.t').value;
+    copyToClipboard(`CC<=${t} 【${n}】`);
+    const o = b.innerText; b.innerText = "OK"; setTimeout(() => b.innerText = o, 800);
+}
+
+function copyIndividualSkillFromInput(b) {
+    const row = b.closest('.skill-row');
+    const n = row.querySelector('.custom-name-input').value || "未設定";
+    const t = row.querySelector('.t').value;
+    copyToClipboard(`CC<=${t} 【${n}】`);
+    const o = b.innerText; b.innerText = "OK"; setTimeout(() => b.innerText = o, 800);
+}
+
+function copyAllSkills() { copyToClipboard(buildPalette()); alert("全技能値をコピーしました！"); }
+
+document.addEventListener('input', calc); calc();
+
+function exportData() {
+    const hp = +document.getElementById("HP_disp").innerText, mp = +document.getElementById("MP_disp").innerText, koku = +document.getElementById("KOKU_disp").innerText;
+    const data = {
+        kind: "character",
+        data: {
+            name: document.getElementById("name").value || "無名",
+            memo: buildMemo(),
+            status: [ {label:"HP",value:hp,max:hp}, {label:"MP",value:mp,max:mp}, {label:"黒餓値",value:koku,max:100} ],
+            params: [
+                {label:"STR",value:document.getElementById("STRv").value}, {label:"CON",value:document.getElementById("CONv").value}, {label:"DEX",value:document.getElementById("DEXv").value},
+                {label:"INT",value:document.getElementById("INTv").value}, {label:"SIZ",value:document.getElementById("SIZv").value}, {label:"SEN",value:document.getElementById("SENv").value},
+                {label:"POW",value:document.getElementById("POWv").value}, {label:"物理DB",value:document.getElementById("PHYS_DB").innerText}, {label:"魔法DB",value:document.getElementById("MAGIC_DB").innerText}, {label:"回避固定",value:document.getElementById("DODGE_FIX").innerText}
+            ],
+            chatPalette: buildPalette()
+        }
+    };
+    copyToClipboard(JSON.stringify(data)); alert("ココフォリア用データをコピーしました！");
+}
+function buildMemo() {
+    const fs = ["job1","job2","age","gender","height","weight","origin","hair"], ls = ["第一職業","第二職業","年齢","性別","身長","体重","出身","髪の色"];
+    let s = "【プロフィール】\n"; fs.forEach((f,i) => { if(document.getElementById(f).value) s += `${ls[i]}: ${document.getElementById(f).value}\n`; });
+    s += `\n【自由記述】\n${document.getElementById("profile_memo").value}\n\n【メモ】\n${document.getElementById("memo").value}`;
+    return s;
+}
+function buildPalette() {
+    let l = [`CC<=${document.getElementById("DEXv").value} 【DEX判定】`, `CC<=${document.getElementById("INTv").value} 【アイデア】`, `CC<=${document.getElementById("POWv").value} 【幸運】`, ""];
+    document.querySelectorAll('.skill-row').forEach(r => {
+        let n = r.querySelector('.skill-name')?.innerText;
+        if(!n) n = r.querySelector('.custom-name-input')?.value;
+        const t = r.querySelector('.t')?.value;
+        if(n && t && +t > 0) l.push(`CC<=${t} 【${n}】`);
+    });
+    return l.join("\n");
+}
+</script>
+</body>
+</html>
