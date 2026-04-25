@@ -48,7 +48,7 @@
         h2::before { content: ""; width: 4px; height: 18px; background: var(--accent); border-radius: 2px; }
 
         .grid-profile { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; }
-        .grid-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
+        .grid-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
 
         .input-group { display: flex; flex-direction: column; gap: 6px; }
         label { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; }
@@ -62,9 +62,9 @@
         }
         input:focus { outline: none; border-color: var(--primary); }
 
-        .stat-box { background: rgba(255,255,255,0.03); border-radius: 15px; padding: 15px; text-align: center; border: 1px solid var(--border); }
-        .stat-val { font-size: 1.5rem; font-weight: 800; width: 100%; border: none; background: transparent; text-align: center; color: white; margin: 5px 0; }
-        .btn-roll { background: var(--primary); color: white; border: none; padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; cursor: pointer; }
+        .stat-box { background: rgba(255,255,255,0.03); border-radius: 12px; padding: 12px 8px; text-align: center; border: 1px solid var(--border); }
+        .stat-val { font-size: 1.3rem; font-weight: 800; width: 100%; border: none; background: transparent; text-align: center; color: white; margin: 3px 0; }
+        .btn-roll { background: var(--primary); color: white; border: none; padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; cursor: pointer; }
 
         .derived-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
         .derived-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border-left: 4px solid var(--primary); }
@@ -140,11 +140,12 @@
             <div class="stat-box"><span class="derived-label">SIZ</span><input type="number" id="SIZv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('SIZv')">ROLL</button></div>
             <div class="stat-box"><span class="derived-label">SEN</span><input type="number" id="SENv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('SENv')">ROLL</button></div>
             <div class="stat-box"><span class="derived-label">POW</span><input type="number" id="POWv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('POWv')">ROLL</button></div>
+            <div class="stat-box"><span class="derived-label">BLA</span><input type="number" id="BLAv" class="stat-val" value="50"><button class="btn-roll" onclick="rollStat('BLAv')">ROLL</button></div>
         </div>
         <div class="derived-stats">
             <div class="derived-item"><div class="derived-label">HP (CON+Bonus)</div><div id="HP_disp" class="derived-val">50</div></div>
-            <div class="derived-item"><div class="derived-label">MP (DEX+Bonus)</div><div id="MP_disp" class="derived-val">50</div></div>
-            <div class="derived-item"><div class="derived-label">黒餓値 (POW)</div><div id="KOKU_disp" class="derived-val">50</div></div>
+            <div class="derived-item"><div class="derived-label">MP (POW+Bonus)</div><div id="MP_disp" class="derived-val">50</div></div>
+            <div class="derived-item"><div class="derived-label">黒餓値 (BLA)</div><div id="KOKU_disp" class="derived-val">50</div></div>
             <div class="derived-item"><div class="derived-label">身体系ダメージボーナス</div><div id="PHYS_DB" class="derived-val">なし</div></div>
             <div class="derived-item"><div class="derived-label">魔法系ダメージボーナス</div><div id="MAGIC_DB" class="derived-val">なし</div></div>
             <div class="derived-item"><div class="derived-label">回避技能固定値</div><div id="DODGE_FIX" class="derived-val">なし</div></div>
@@ -247,18 +248,18 @@ function rollStat(id) {
     document.getElementById(id).value = val;
     calc();
 }
-function rollAll() { ['STRv', 'CONv', 'DEXv', 'INTv', 'SIZv', 'SENv', 'POWv'].forEach(rollStat); }
+function rollAll() { ['STRv', 'CONv', 'DEXv', 'INTv', 'SIZv', 'SENv', 'POWv', 'BLAv'].forEach(rollStat); }
 
 function calc() {
-    const str = +document.getElementById("STRv").value, con = +document.getElementById("CONv").value, dex = +document.getElementById("DEXv").value, int = +document.getElementById("INTv").value, siz = +document.getElementById("SIZv").value, sen = +document.getElementById("SENv").value, pow = +document.getElementById("POWv").value;
+    const str = +document.getElementById("STRv").value, con = +document.getElementById("CONv").value, dex = +document.getElementById("DEXv").value, int = +document.getElementById("INTv").value, siz = +document.getElementById("SIZv").value, sen = +document.getElementById("SENv").value, pow = +document.getElementById("POWv").value, bla = +document.getElementById("BLAv").value;
     let hpB = 0, mpB = 0;
     document.querySelectorAll(".orb-select").forEach(sel => {
         if(sel.value.startsWith("hp_")) hpB += parseInt(sel.value.split("_")[1]);
         if(sel.value.startsWith("mp_")) mpB += parseInt(sel.value.split("_")[1]);
     });
     document.getElementById("HP_disp").innerText = con + hpB;
-    document.getElementById("MP_disp").innerText = dex + mpB;
-    document.getElementById("KOKU_disp").innerText = pow;
+    document.getElementById("MP_disp").innerText = pow + mpB;
+    document.getElementById("KOKU_disp").innerText = bla;
     document.getElementById("PHYS_DB").innerText = siz >= 90 ? "+1D15" : siz >= 70 ? "+1D10" : siz >= 50 ? "+1D5" : "なし";
     document.getElementById("MAGIC_DB").innerText = int >= 90 ? "+1D15" : int >= 70 ? "+1D10" : int >= 50 ? "+1D5" : "なし";
     document.getElementById("DODGE_FIX").innerText = sen >= 90 ? "+15" : sen >= 70 ? "+10" : sen >= 50 ? "+5" : "なし";
@@ -317,7 +318,7 @@ function exportData() {
             params: [
                 {label:"STR",value:document.getElementById("STRv").value}, {label:"CON",value:document.getElementById("CONv").value}, {label:"DEX",value:document.getElementById("DEXv").value},
                 {label:"INT",value:document.getElementById("INTv").value}, {label:"SIZ",value:document.getElementById("SIZv").value}, {label:"SEN",value:document.getElementById("SENv").value},
-                {label:"POW",value:document.getElementById("POWv").value}, {label:"物理DB",value:document.getElementById("PHYS_DB").innerText}, {label:"魔法DB",value:document.getElementById("MAGIC_DB").innerText}, {label:"回避固定",value:document.getElementById("DODGE_FIX").innerText}
+                {label:"POW",value:document.getElementById("POWv").value}, {label:"BLA",value:document.getElementById("BLAv").value}, {label:"物理DB",value:document.getElementById("PHYS_DB").innerText}, {label:"魔法DB",value:document.getElementById("MAGIC_DB").innerText}, {label:"回避固定",value:document.getElementById("DODGE_FIX").innerText}
             ],
             chatPalette: buildPalette()
         }
@@ -363,7 +364,8 @@ function saveToLocal() {
             INTv: document.getElementById("INTv").value,
             SIZv: document.getElementById("SIZv").value,
             SENv: document.getElementById("SENv").value,
-            POWv: document.getElementById("POWv").value
+            POWv: document.getElementById("POWv").value,
+            BLAv: document.getElementById("BLAv").value
         },
         orbs: Array.from(document.querySelectorAll(".orb-select")).map(s => s.value),
         skills: Array.from(document.querySelectorAll(".skill-row")).map(r => {
