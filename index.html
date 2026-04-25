@@ -74,8 +74,8 @@
         .footer-bar {
             position: fixed; bottom: 0; left: 0; right: 0;
             background: rgba(15, 23, 42, 0.95); backdrop-filter: blur(20px);
-            border-top: 1px solid var(--primary); padding: 20px 40px;
-            display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 30px; align-items: center; z-index: 1000;
+            border-top: 1px solid var(--primary); padding: 15px 30px;
+            display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 20px; align-items: center; z-index: 1000;
         }
         .point-item { width: 100%; }
         .point-label { font-size: 0.75rem; color: var(--primary); font-weight: 700; margin-bottom: 4px; display: block; }
@@ -84,8 +84,10 @@
         .point-fill { height: 100%; background: var(--primary); width: 0%; transition: width 0.3s; }
         .point-fill.error { background: #ef4444; }
 
-        .footer-btns { display: flex; gap: 15px; }
-        .btn-footer { flex: 1; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 0.85rem; }
+        .footer-btns { display: flex; gap: 10px; }
+        .btn-footer { flex: 1; padding: 10px 5px; border-radius: 12px; font-weight: 700; cursor: pointer; border: none; font-size: 0.8rem; white-space: nowrap; transition: all 0.2s; }
+        .btn-footer:hover { transform: translateY(-2px); filter: brightness(1.1); }
+        .btn-footer-save { background: #10b981; color: white; }
         .btn-footer-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
         .btn-footer-secondary { background: var(--input-bg); color: var(--accent); border: 1px solid var(--accent); }
 
@@ -170,8 +172,10 @@
         <div class="point-bar"><div id="HOB_PT_BAR" class="point-fill"></div></div>
     </div>
     <div class="footer-btns">
-        <button class="btn-footer btn-footer-secondary" onclick="copyAllSkills()">全技能コピー</button>
-        <button class="btn-footer btn-footer-primary" onclick="exportData()">ココフォリア出力</button>
+        <button class="btn-footer btn-footer-save" onclick="saveToLocal()">一時保存</button>
+        <button class="btn-footer btn-footer-secondary" onclick="loadFromLocal()">読込</button>
+        <button class="btn-footer btn-footer-secondary" onclick="copyAllSkills()">技能コピー</button>
+        <button class="btn-footer btn-footer-primary" onclick="exportData()">出力</button>
     </div>
 </div>
 
@@ -334,6 +338,91 @@ function buildPalette() {
         if(n && t && +t > 0) l.push(`CC<=${t} 【${n}】`);
     });
     return l.join("\n");
+}
+
+function saveToLocal() {
+    const data = {
+        profile: {
+            name: document.getElementById("name").value,
+            job1: document.getElementById("job1").value,
+            job2: document.getElementById("job2").value,
+            age: document.getElementById("age").value,
+            gender: document.getElementById("gender").value,
+            height: document.getElementById("height").value,
+            weight: document.getElementById("weight").value,
+            origin: document.getElementById("origin").value,
+            hair: document.getElementById("hair").value,
+            profile_memo: document.getElementById("profile_memo").value
+        },
+        stats: {
+            STRv: document.getElementById("STRv").value,
+            CONv: document.getElementById("CONv").value,
+            DEXv: document.getElementById("DEXv").value,
+            INTv: document.getElementById("INTv").value,
+            SIZv: document.getElementById("SIZv").value,
+            SENv: document.getElementById("SENv").value,
+            POWv: document.getElementById("POWv").value
+        },
+        orbs: Array.from(document.querySelectorAll(".orb-select")).map(s => s.value),
+        skills: Array.from(document.querySelectorAll(".skill-row")).map(r => {
+            const customInput = r.querySelector(".custom-name-input");
+            return {
+                customName: customInput ? customInput.value : null,
+                j: r.querySelector(".j").value,
+                h: r.querySelector(".h").value,
+                g_manual: r.querySelector(".g").getAttribute("data-manual") || "0"
+            };
+        }),
+        memo: document.getElementById("memo").value
+    };
+    localStorage.setItem("trpg_char_sheet_save", JSON.stringify(data));
+    alert("データをブラウザに保存しました！");
+}
+
+function loadFromLocal() {
+    const json = localStorage.getItem("trpg_char_sheet_save");
+    if (!json) {
+        alert("保存されたデータが見つかりません。");
+        return;
+    }
+    const data = JSON.parse(json);
+    
+    // Profile
+    for (const key in data.profile) {
+        const el = document.getElementById(key);
+        if (el) el.value = data.profile[key];
+    }
+    
+    // Stats
+    for (const key in data.stats) {
+        const el = document.getElementById(key);
+        if (el) el.value = data.stats[key];
+    }
+    
+    // Orbs
+    const orbs = document.querySelectorAll(".orb-select");
+    data.orbs.forEach((val, i) => {
+        if (orbs[i]) orbs[i].value = val;
+    });
+    
+    // Skills
+    const skillRows = document.querySelectorAll(".skill-row");
+    data.skills.forEach((sData, i) => {
+        const row = skillRows[i];
+        if (row) {
+            const customInput = row.querySelector(".custom-name-input");
+            if (customInput && sData.customName !== null) customInput.value = sData.customName;
+            row.querySelector(".j").value = sData.j;
+            row.querySelector(".h").value = sData.h;
+            row.querySelector(".g").setAttribute("data-manual", sData.g_manual);
+        }
+    });
+    
+    // Memo
+    document.getElementById("memo").value = data.memo;
+    
+    calc();
+    alert("データを読み込みました！");
 }
 </script>
 </body>
