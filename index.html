@@ -114,6 +114,7 @@
         <h2>【プロフィール】</h2>
         <div class="grid-profile">
             <div class="input-group"><label>名前</label><input type="text" id="name" value="無名"></div>
+            <div class="input-group"><label>種族</label><input type="text" id="race"></div>
             <div class="input-group"><label>第一職業</label><input type="text" id="job1"></div>
             <div class="input-group"><label>第二職業</label><input type="text" id="job2"></div>
             <div class="input-group"><label>年齢</label><input type="text" id="age"></div>
@@ -324,7 +325,7 @@ function exportData() {
     copyToClipboard(JSON.stringify(data)); alert("ココフォリア用データをコピーしました！");
 }
 function buildMemo() {
-    const fs = ["job1","job2","age","gender","height","weight","origin","hair"], ls = ["第一職業","第二職業","年齢","性別","身長","体重","出身","髪の色"];
+    const fs = ["race", "job1","job2","age","gender","height","weight","origin","hair"], ls = ["種族","第一職業","第二職業","年齢","性別","身長","体重","出身","髪の色"];
     let s = "【プロフィール】\n"; fs.forEach((f,i) => { if(document.getElementById(f).value) s += `${ls[i]}: ${document.getElementById(f).value}\n`; });
     s += `\n【自由記述】\n${document.getElementById("profile_memo").value}\n\n【メモ】\n${document.getElementById("memo").value}`;
     return s;
@@ -344,6 +345,7 @@ function saveToLocal() {
     const data = {
         profile: {
             name: document.getElementById("name").value,
+            race: document.getElementById("race").value,
             job1: document.getElementById("job1").value,
             job2: document.getElementById("job2").value,
             age: document.getElementById("age").value,
